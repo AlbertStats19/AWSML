@@ -12,7 +12,7 @@ Parameters:
   ProjectName:
     Type: String
     Description: Nombre del proyecto para prefijos de recursos.
-    Default: IrisMLOps
+    Default: iris-mlops
 
 Resources:
   # S3 Bucket para artefactos y datos de SageMaker
