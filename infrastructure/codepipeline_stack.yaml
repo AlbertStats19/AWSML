@@ -49,7 +49,8 @@ Resources:
           - Name: AWS_REGION
             Value: !Ref "AWS::Region"
           - Name: S3_ARTIFACT_BUCKET
-            Value: !ImportValue !Sub "${ProjectName}-MLOpsArtifactsBucketName"
+            Value: !ImportValue
+              Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName"
           - Name: SAGEMAKER_EXECUTION_ROLE_ARN
             Value: !ImportValue !Sub "${ProjectName}-SageMakerExecutionRoleArn"
           - Name: SAGEMAKER_MODEL_PACKAGE_GROUP_NAME
