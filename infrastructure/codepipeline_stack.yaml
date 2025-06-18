@@ -40,7 +40,7 @@ Resources:
       ServiceRole: !ImportValue
         Fn::Sub: "${ProjectName}-CodeBuildServiceRoleArn"
       Artifacts:
-        Type: NO_ARTIFACTS # CodeBuild no necesita subir artefactos a CodePipeline en este caso
+        Type: CODEPIPELINE # CodeBuild no necesita subir artefactos a CodePipeline en este caso
       Environment:
         ComputeType: BUILD_GENERAL1_MEDIUM # O MEDIUM/LARGE segun necesidad
         Image: aws/codebuild/standard:5.0 # Una imagen con Python 3.9
