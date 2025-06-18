@@ -42,7 +42,7 @@ Resources:
       Artifacts:
         Type: NO_ARTIFACTS # CodeBuild no necesita subir artefactos a CodePipeline en este caso
       Environment:
-        ComputeType: BUILD_GENERAL1_SMALL # O MEDIUM/LARGE segun necesidad
+        ComputeType: BUILD_GENERAL1_MEDIUM # O MEDIUM/LARGE segun necesidad
         Image: aws/codebuild/python:3.9-on-debian-11 # Una imagen con Python 3.9
         Type: LINUX_CONTAINER
         EnvironmentVariables:
