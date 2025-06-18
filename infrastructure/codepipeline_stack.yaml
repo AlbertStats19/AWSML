@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: |
   Plantilla CloudFormation para AWS CodePipeline y CodeBuild
-  para automatizar el pipeline MLOps de Iris.
+  para automatizar el pipeline MLOps de Iris usando GitHub como fuente.
 
 Parameters:
   ProjectName:
@@ -9,15 +9,26 @@ Parameters:
     Description: Nombre del proyecto para prefijos de recursos.
     Default: IrisMLOps
   
-  CodeCommitRepositoryName:
+  GitHubConnectionArn:
     Type: String
-    Description: Nombre del repositorio de CodeCommit que activará el pipeline.
-    Default: iris-mlops-repo
+    Description: El ARN de la conexión de AWS CodeStar para GitHub.
+    # *** IMPORTANTE: REEMPLAZA CON EL ARN REAL DE TU CONEXIÓN ***
+    Default: arn:aws:codeconnections:us-east-2:503427799533:connection/bc1301f8-7319-4fe3-bbda-3ca51e4e4dae # <--- ¡CAMBIA ESTO CON TU ARN REAL!
 
-  CodeCommitBranchName:
+  GitHubRepositoryOwner:
     Type: String
-    Description: Nombre de la rama en CodeCommit a monitorear.
-    Default: main
+    Description: Nombre de usuario o organización de GitHub propietaria del repositorio.
+    Default: AlbertStats19 
+
+  GitHubRepositoryName:
+    Type: String
+    Description: Nombre del repositorio de GitHub.
+    Default: AWSML 
+
+  GitHubBranchName:
+    Type: String
+    Description: Nombre de la rama en GitHub a monitorear.
+    Default: main 
 
 Resources:
   # CodeBuild Project para ejecutar el SageMaker Pipeline
@@ -67,14 +78,14 @@ Resources:
               ActionTypeId:
                 Category: Source
                 Owner: AWS
-                Provider: CodeCommit
+                Provider: GitHub
                 Version: '1'
               OutputArtifacts:
                 - Name: SourceOutput
               Configuration:
-                RepositoryName: !Ref CodeCommitRepositoryName
-                BranchName: !Ref CodeCommitBranchName
-                PollForSourceChanges: False # Se recomienda usar Webhooks para eventos en tiempo real
+                ConnectionArn: !Ref GitHubConnectionArn
+                FullRepositoryId: !Sub "${GitHubRepositoryOwner}/${GitHubRepositoryName}"
+                BranchName: !Ref GitHubBranchName
               RunOrder: 1
         - Name: BuildAndTrain
           Actions:
@@ -92,40 +103,6 @@ Resources:
       Tags:
         - Key: Project
           Value: !Ref ProjectName
-
-  # Regla de EventBridge para activar CodePipeline al hacer push a CodeCommit
-  CodeCommitTrigger:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: Rule to trigger CodePipeline on CodeCommit push
-      EventPattern:
-        source:
-          - aws.codecommit
-        detail-type:
-          - CodeCommit Repository State Change
-        resources:
-          - !Sub "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepositoryName}"
-        detail:
-          event:
-            - referenceCreated
-            - referenceUpdated
-          referenceType:
-            - branch
-          referenceName:
-            - !Ref CodeCommitBranchName
-      Targets:
-        - Arn: !GetAtt CodePipeline.Arn
-          Id: CodePipelineTarget
-          RoleArn: !ImportValue !Sub "${ProjectName}-CodePipelineServiceRoleArn" # El rol debe tener permisos para invocar CloudWatch Events
-
-  # Permiso para que EventBridge invoque CodePipeline
-  CodePipelineEventPermission:
-    Type: AWS::Lambda::Permission # Se usa Lambda::Permission pero es general para EventBridge
-    Properties:
-      FunctionName: !GetAtt CodePipeline.Arn # Este truco es para obtener el ARN del Pipeline para Target
-      Action: 'codepipeline:StartPipelineExecution'
-      Principal: 'events.amazonaws.com'
-      SourceArn: !GetAtt CodeCommitTrigger.Arn
 
 Outputs:
   CodeBuildProjectName:
