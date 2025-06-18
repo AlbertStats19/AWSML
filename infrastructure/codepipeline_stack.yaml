@@ -37,7 +37,8 @@ Resources:
     Properties:
       Name: !Sub "${ProjectName}-CodeBuild-Project"
       Description: Proyecto CodeBuild para ejecutar el SageMaker Pipeline de Iris.
-      ServiceRole: !ImportValue !Sub "${ProjectName}-CodeBuildServiceRoleArn" # Rol importado de main_stack.yaml
+      ServiceRole: !ImportValue
+        Fn::Sub: "${ProjectName}-CodeBuildServiceRoleArn"
       Artifacts:
         Type: NO_ARTIFACTS # CodeBuild no necesita subir artefactos a CodePipeline en este caso
       Environment:
