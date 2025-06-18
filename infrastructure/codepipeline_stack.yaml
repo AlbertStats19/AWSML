@@ -18,17 +18,17 @@ Parameters:
   GitHubRepositoryOwner:
     Type: String
     Description: Nombre de usuario o organización de GitHub propietaria del repositorio.
-    Default: AlbertStats19 
+    Default: AlbertStats19
 
   GitHubRepositoryName:
     Type: String
     Description: Nombre del repositorio de GitHub.
-    Default: AWSML 
+    Default: AWSML
 
   GitHubBranchName:
     Type: String
     Description: Nombre de la rama en GitHub a monitorear.
-    Default: main 
+    Default: main
 
 Resources:
   # CodeBuild Project para ejecutar el SageMaker Pipeline
@@ -84,7 +84,7 @@ Resources:
               ActionTypeId:
                 Category: Source
                 Owner: AWS
-                Provider: GitHub
+                Provider: CodeStarSourceConnection # <-- ¡ESTE ES EL CAMBIO CLAVE!
                 Version: '1'
               OutputArtifacts:
                 - Name: SourceOutput
