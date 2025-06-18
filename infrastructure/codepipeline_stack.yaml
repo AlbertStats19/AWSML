@@ -38,7 +38,7 @@ Resources:
       Name: !Sub "${ProjectName}-CodeBuild-Project"
       Description: Proyecto CodeBuild para ejecutar el SageMaker Pipeline de Iris.
       ServiceRole: !ImportValue
-        Fn::Sub: "${ProjectName}-CodeBuildServiceRoleArn"
+        Fn::Sub: "${ProjectName}-CodeBuildServiceRoleArn" # <-- CORRECCIÓN APLICADA AQUÍ (1)
       Artifacts:
         Type: NO_ARTIFACTS # CodeBuild no necesita subir artefactos a CodePipeline en este caso
       Environment:
@@ -50,11 +50,13 @@ Resources:
             Value: !Ref "AWS::Region"
           - Name: S3_ARTIFACT_BUCKET
             Value: !ImportValue
-              Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName"
+              Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName" # <-- CORRECCIÓN APLICADA AQUÍ (2)
           - Name: SAGEMAKER_EXECUTION_ROLE_ARN
-            Value: !ImportValue !Sub "${ProjectName}-SageMakerExecutionRoleArn"
+            Value: !ImportValue
+              Fn::Sub: "${ProjectName}-SageMakerExecutionRoleArn" # <-- CORRECCIÓN APLICADA AQUÍ (3)
           - Name: SAGEMAKER_MODEL_PACKAGE_GROUP_NAME
-            Value: !ImportValue !Sub "${ProjectName}-IrisModelPackageGroupName"
+            Value: !ImportValue
+              Fn::Sub: "${ProjectName}-IrisModelPackageGroupName" # <-- CORRECCIÓN APLICADA AQUÍ (4)
           - Name: SAGEMAKER_BASE_JOB_PREFIX
             Value: !Sub "${ProjectName}-pipeline" # Prefijo para trabajos de SageMaker dentro del pipeline
       Source:
@@ -69,10 +71,12 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: !Sub "${ProjectName}-MLOps-Pipeline"
-      RoleArn: !ImportValue !Sub "${ProjectName}-CodePipelineServiceRoleArn" # Rol importado de main_stack.yaml
+      RoleArn: !ImportValue
+        Fn::Sub: "${ProjectName}-CodePipelineServiceRoleArn" # <-- CORRECCIÓN APLICADA AQUÍ (5)
       ArtifactStore:
         Type: S3
-        Location: !ImportValue !Sub "${ProjectName}-MLOpsArtifactsBucketName" # Bucket importado de main_stack.yaml
+        Location: !ImportValue
+          Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName" # <-- CORRECCIÓN APLICADA AQUÍ (6)
       Stages:
         - Name: Source
           Actions:
