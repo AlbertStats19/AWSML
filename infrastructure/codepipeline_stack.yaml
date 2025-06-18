@@ -106,9 +106,10 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
-          Tags:
-            - Key: Project
-              Value: !Ref ProjectName
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
 
 Outputs:
   CodeBuildProjectName:
