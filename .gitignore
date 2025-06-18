@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.egg-info/
+.pytest_cache/
+.tox/
+dist/
+build/
+*.so
+
+# Jupyter/IDE
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# Local data and models
+data/
+models/
+*.joblib
+*.pkl
+*.bin
+*.pt
+*.tf
+*.h5
+
+# AWS specific (if generated locally)
+.aws-sam/
+.terraform/
+
+# Logs
+*.log
+
+# Temp files
+*.tmp

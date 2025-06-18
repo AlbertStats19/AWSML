@@ -1,0 +1,6 @@
+pandas
+numpy
+scikit-learn==1.0.2 # Mantener la misma versión para consistencia
+joblib
+boto3
+sagemaker # Para interactuar con SageMaker desde los scripts

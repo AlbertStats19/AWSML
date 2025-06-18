@@ -1,0 +1,141 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  Plantilla CloudFormation para AWS CodePipeline y CodeBuild
+  para automatizar el pipeline MLOps de Iris.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Nombre del proyecto para prefijos de recursos.
+    Default: IrisMLOps
+  
+  CodeCommitRepositoryName:
+    Type: String
+    Description: Nombre del repositorio de CodeCommit que activará el pipeline.
+    Default: iris-mlops-repo
+
+  CodeCommitBranchName:
+    Type: String
+    Description: Nombre de la rama en CodeCommit a monitorear.
+    Default: main
+
+Resources:
+  # CodeBuild Project para ejecutar el SageMaker Pipeline
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${ProjectName}-CodeBuild-Project"
+      Description: Proyecto CodeBuild para ejecutar el SageMaker Pipeline de Iris.
+      ServiceRole: !ImportValue !Sub "${ProjectName}-CodeBuildServiceRoleArn" # Rol importado de main_stack.yaml
+      Artifacts:
+        Type: NO_ARTIFACTS # CodeBuild no necesita subir artefactos a CodePipeline en este caso
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL # O MEDIUM/LARGE según necesidad
+        Image: aws/codebuild/python:3.9-on-debian-11 # Una imagen con Python 3.9
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: AWS_REGION
+            Value: !Ref "AWS::Region"
+          - Name: S3_ARTIFACT_BUCKET
+            Value: !ImportValue !Sub "${ProjectName}-MLOpsArtifactsBucketName"
+          - Name: SAGEMAKER_EXECUTION_ROLE_ARN
+            Value: !ImportValue !Sub "${ProjectName}-SageMakerExecutionRoleArn"
+          - Name: SAGEMAKER_MODEL_PACKAGE_GROUP_NAME
+            Value: !ImportValue !Sub "${ProjectName}-IrisModelPackageGroupName"
+          - Name: SAGEMAKER_BASE_JOB_PREFIX
+            Value: !Sub "${ProjectName}-pipeline" # Prefijo para trabajos de SageMaker dentro del pipeline
+      Source:
+        Type: CODEPIPELINE # Se obtiene el código de CodePipeline
+        BuildSpec: buildspec.yml # El archivo buildspec.yml en el repo
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # CodePipeline para orquestar el CI/CD
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${ProjectName}-MLOps-Pipeline"
+      RoleArn: !ImportValue !Sub "${ProjectName}-CodePipelineServiceRoleArn" # Rol importado de main_stack.yaml
+      ArtifactStore:
+        Type: S3
+        Location: !ImportValue !Sub "${ProjectName}-MLOpsArtifactsBucketName" # Bucket importado de main_stack.yaml
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeCommit
+                Version: '1'
+              OutputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                RepositoryName: !Ref CodeCommitRepositoryName
+                BranchName: !Ref CodeCommitBranchName
+                PollForSourceChanges: False # Se recomienda usar Webhooks para eventos en tiempo real
+              RunOrder: 1
+        - Name: BuildAndTrain
+          Actions:
+            - Name: BuildAndRunSageMakerPipeline
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              InputArtifacts:
+                - Name: SourceOutput
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              RunOrder: 1
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # Regla de EventBridge para activar CodePipeline al hacer push a CodeCommit
+  CodeCommitTrigger:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Rule to trigger CodePipeline on CodeCommit push
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - CodeCommit Repository State Change
+        resources:
+          - !Sub "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepositoryName}"
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - !Ref CodeCommitBranchName
+      Targets:
+        - Arn: !GetAtt CodePipeline.Arn
+          Id: CodePipelineTarget
+          RoleArn: !ImportValue !Sub "${ProjectName}-CodePipelineServiceRoleArn" # El rol debe tener permisos para invocar CloudWatch Events
+
+  # Permiso para que EventBridge invoque CodePipeline
+  CodePipelineEventPermission:
+    Type: AWS::Lambda::Permission # Se usa Lambda::Permission pero es general para EventBridge
+    Properties:
+      FunctionName: !GetAtt CodePipeline.Arn # Este truco es para obtener el ARN del Pipeline para Target
+      Action: 'codepipeline:StartPipelineExecution'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt CodeCommitTrigger.Arn
+
+Outputs:
+  CodeBuildProjectName:
+    Description: Nombre del proyecto CodeBuild.
+    Value: !Ref CodeBuildProject
+    Export:
+      Name: !Sub "${ProjectName}-CodeBuildProjectName"
+
+  CodePipelineName:
+    Description: Nombre del CodePipeline.
+    Value: !Ref CodePipeline
+    Export:
+      Name: !Sub "${ProjectName}-CodePipelineName"

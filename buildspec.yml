@@ -1,0 +1,54 @@
+version: 0.2
+
+# Define las variables de entorno que CodeBuild pasará al script Python.
+# Estos valores serán inyectados por CloudFormation al crear el proyecto CodeBuild.
+# Se usan valores placeholder aquí, pero CodeBuild los reemplazará con los reales.
+env:
+  variables:
+    AWS_REGION: "us-east-1" # Placeholder, será sobreescrito por CloudFormation
+    S3_ARTIFACT_BUCKET: "your-mlops-artifact-bucket" # Placeholder, será sobreescrito por CloudFormation
+    SAGEMAKER_EXECUTION_ROLE_ARN: "arn:aws:iam::123456789012:role/SageMakerExecutionRole" # Placeholder
+    SAGEMAKER_MODEL_PACKAGE_GROUP_NAME: "IrisModelPackageGroup" # Placeholder
+    SAGEMAKER_BASE_JOB_PREFIX: "iris-mlops" # Prefijo para trabajos de SageMaker
+
+phases:
+  install:
+    commands:
+      # Instalar AWS CLI v2 (si no está disponible) y dependencias de Python
+      - echo "Installing dependencies..."
+      - apt-get update -y
+      - apt-get install -y python3-pip
+      - pip install --upgrade pip
+      - pip install -r ml_code/requirements.txt
+      - pip install sagemaker # Asegurar que sagemaker SDK esté disponible
+      - pip install pytest # Para ejecutar pruebas si las tuvieras
+
+  pre_build:
+    commands:
+      - echo "Running pre-build checks and tests..."
+      # Opcional: ejecutar pruebas unitarias si tienes el directorio 'tests/'
+      # - pytest tests/
+
+  build:
+    commands:
+      - echo "Starting SageMaker Pipeline deployment..."
+      # Sincronizar el archivo de configuración con S3 antes de ejecutar el pipeline
+      # Esto asegura que prod_config.json esté disponible para batch_predict.py
+      - aws s3 cp config/prod_config.json s3://$S3_ARTIFACT_BUCKET/config/prod_config.json
+      - echo "prod_config.json copied to S3://$S3_ARTIFACT_BUCKET/config/"
+
+      # Ejecutar el script Python que define y ejecuta el SageMaker Pipeline
+      - python sagemaker_pipelines/iris_pipeline.py
+
+  post_build:
+    commands:
+      - echo "SageMaker Pipeline initiated. Check SageMaker console for details."
+      - echo "Build completed."
+
+artifacts:
+  files:
+    # No se generan artefactos para el CodePipeline en este caso, ya que SageMaker gestiona los suyos.
+    # El output principal es el inicio del SageMaker Pipeline.
+    # Puedes incluir aquí archivos si quieres pasarlos a una fase posterior de CodePipeline
+    # Por ejemplo, un archivo de confirmación de éxito.
+    - '**/*' # Opcional: Subir todo el contenido del repo como artefacto de salida para depuración

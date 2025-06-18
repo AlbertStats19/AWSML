@@ -1,0 +1,6 @@
+{
+    "BATCH_PREDICTION": {
+        "SAMPLE_RATE": 0.1,
+        "OUTPUT_FILE_NAME": "batch_pred.csv"
+    }
+}

@@ -1,0 +1,267 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  Plantilla CloudFormation para los recursos base de MLOps:
+  - S3 Bucket para artefactos y datos de SageMaker.
+  - IAM Role para la ejecución de SageMaker.
+  - IAM Role para CodeBuild.
+  - IAM Role para CodePipeline.
+  - SageMaker Model Package Group.
+  - SNS Topic para notificaciones del pipeline.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Nombre del proyecto para prefijos de recursos.
+    Default: IrisMLOps
+
+Resources:
+  # S3 Bucket para artefactos y datos de SageMaker
+  MLOpsArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-artifacts-${AWS::AccountId}-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+    DeletionPolicy: Retain # Retener el bucket en caso de eliminación del stack
+
+  # IAM Role para la ejecución de SageMaker (para Training, Processing, Pipelines)
+  SageMakerExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess # Para simplificar, en producción restringir a buckets específicos
+        - arn:aws:iam::aws:policy/CloudWatchFullAccess # Para logs de SageMaker
+      Path: /
+      RoleName: !Sub "${ProjectName}-SageMakerExecutionRole"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # IAM Role para CodeBuild
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}-CodeBuild-Project:*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                Resource:
+                  - !GetAtt MLOpsArtifactsBucket.Arn
+                  - !Sub "${MLOpsArtifactsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - sagemaker:CreatePipeline
+                  - sagemaker:UpdatePipeline
+                  - sagemaker:StartPipelineExecution
+                  - sagemaker:DescribePipelineExecution
+                  - sagemaker:ListPipelineExecutions
+                  - sagemaker:StopPipelineExecution
+                  - sagemaker:ListProcessingJobs
+                  - sagemaker:ListTrainingJobs
+                  - sagemaker:ListTransformJobs
+                  - sagemaker:DescribeTrainingJob
+                  - sagemaker:DescribeProcessingJob
+                  - sagemaker:DescribeTransformJob
+                  - sagemaker:DescribeModelPackageGroup
+                  - sagemaker:CreateProject
+                  - sagemaker:ListProjects
+                  - sagemaker:DescribeModelPackageGroup
+                  - sagemaker:UpdateModelPackage
+                  - sagemaker:CreateContext
+                  - sagemaker:ListContexts
+                  - sagemaker:UpdateContext
+                  - sagemaker:AddAssociation
+                  - sagemaker:ListAssociations
+                  - sagemaker:DeleteAssociation
+                  - sagemaker:DescribeExperiment
+                  - sagemaker:ListExperiments
+                  - sagemaker:DescribeExperimentTrial
+                  - sagemaker:ListExperimentTrials
+                  - sagemaker:DescribeTrialComponent
+                  - sagemaker:ListTrialComponents
+                  - sagemaker:DescribeModel
+                  - sagemaker:ListModels
+                  - sagemaker:CreateTrainingJob
+                  - sagemaker:CreateProcessingJob
+                  - sagemaker:CreateTransformJob
+                  - sagemaker:CreateModel
+                  - sagemaker:DescribeNotebookInstance
+                  - sagemaker:ListNotebookInstances
+                  - sagemaker:UpdateNotebookInstance
+                  - sagemaker:StartNotebookInstance
+                  - sagemaker:StopNotebookInstance
+                  - sagemaker:CreateFlowDefinition
+                  - sagemaker:DescribeFlowDefinition
+                  - sagemaker:ListFlowDefinitions
+                  - sagemaker:UpdateFlowDefinition
+                  - sagemaker:DeleteFlowDefinition
+                  - sagemaker:CreateModelPackageGroup
+                  - sagemaker:DeleteModelPackageGroup
+                  - sagemaker:UpdateModelPackageGroup
+                  - sagemaker:CreateModelPackage
+                  - sagemaker:DeleteModelPackage
+                  - sagemaker:ListModelPackages
+                  - sagemaker:DescribeModelPackage
+                  - sagemaker:ListModelPackageGroups
+                  - sagemaker:UpdateModelPackageStatus
+                  - sagemaker:UpdateModelPackage
+                Resource: "*" # Se necesita acceso amplio para SageMaker Pipelines
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: !GetAtt SageMakerExecutionRole.Arn # Permiso para pasar el rol de SageMaker
+                Condition:
+                  StringEquals:
+                    iam:PassedToService: sagemaker.amazonaws.com
+      RoleName: !Sub "${ProjectName}-CodeBuildServiceRole"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # IAM Role para CodePipeline
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodePipelinePermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketVersioning
+                  - s3:PutObject
+                Resource:
+                  - !GetAtt MLOpsArtifactsBucket.Arn
+                  - !Sub "${MLOpsArtifactsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StopBuild
+                Resource: !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${ProjectName}-CodeBuild-Project"
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !GetAtt CodeBuildServiceRole.Arn
+                  - !GetAtt SageMakerExecutionRole.Arn # Si CodePipeline necesita pasar el rol de SageMaker a otras acciones
+                Condition:
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - codebuild.amazonaws.com
+                      - sagemaker.amazonaws.com
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource: "*" # Para eventos de CodePipeline a EventBridge
+      RoleName: !Sub "${ProjectName}-CodePipelineServiceRole"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # SageMaker Model Package Group para versionar modelos
+  IrisModelPackageGroup:
+    Type: AWS::SageMaker::ModelPackageGroup
+    Properties:
+      ModelPackageGroupName: !Sub "${ProjectName}-IrisModelGroup"
+      ModelPackageGroupDescription: "Grupo de paquetes de modelos para el clasificador Iris."
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+  # SNS Topic para notificaciones del pipeline
+  PipelineNotificationsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${ProjectName}-PipelineNotificationsTopic"
+      DisplayName: !Sub "${ProjectName} MLOps Pipeline Notifications"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+Outputs:
+  MLOpsArtifactsBucketName:
+    Description: Nombre del bucket S3 para artefactos MLOps.
+    Value: !Ref MLOpsArtifactsBucket
+    Export:
+      Name: !Sub "${ProjectName}-MLOpsArtifactsBucketName"
+
+  SageMakerExecutionRoleArn:
+    Description: ARN del rol de ejecución de SageMaker.
+    Value: !GetAtt SageMakerExecutionRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-SageMakerExecutionRoleArn"
+
+  CodeBuildServiceRoleArn:
+    Description: ARN del rol de servicio de CodeBuild.
+    Value: !GetAtt CodeBuildServiceRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-CodeBuildServiceRoleArn"
+
+  CodePipelineServiceRoleArn:
+    Description: ARN del rol de servicio de CodePipeline.
+    Value: !GetAtt CodePipelineServiceRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-CodePipelineServiceRoleArn"
+
+  IrisModelPackageGroupName:
+    Description: Nombre del SageMaker Model Package Group para el modelo Iris.
+    Value: !Ref IrisModelPackageGroup
+    Export:
+      Name: !Sub "${ProjectName}-IrisModelPackageGroupName"
+
+  PipelineNotificationsTopicArn:
+    Description: ARN del tema SNS para notificaciones del pipeline.
+    Value: !Ref PipelineNotificationsTopic
+    Export:
+      Name: !Sub "${ProjectName}-PipelineNotificationsTopicArn"
