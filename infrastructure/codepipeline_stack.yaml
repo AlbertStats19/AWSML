@@ -7,7 +7,7 @@ Parameters:
   ProjectName:
     Type: String
     Description: Nombre del proyecto para prefijos de recursos.
-    Default: IrisMLOps
+    Default: iris-mlops
   
   GitHubConnectionArn:
     Type: String
