@@ -8,11 +8,11 @@ Parameters:
     Type: String
     Description: Nombre del proyecto para prefijos de recursos.
     Default: iris-mlops
-  
+
   GitHubConnectionArn:
     Type: String
     Description: El ARN de la conexión de AWS CodeStar para GitHub.
-    # *** IMPORTANTE: REEMPLAZA CON EL ARN REAL DE TU CONEXIÓN ***
+    # *** IMPORTANTE: REEMPLAZA CON EL ARN REAL DE TU CONEXION ***
     Default: arn:aws:codeconnections:us-east-2:503427799533:connection/bc1301f8-7319-4fe3-bbda-3ca51e4e4dae # <--- ¡CAMBIA ESTO CON TU ARN REAL!
 
   GitHubRepositoryOwner:
@@ -38,11 +38,11 @@ Resources:
       Name: !Sub "${ProjectName}-CodeBuild-Project"
       Description: Proyecto CodeBuild para ejecutar el SageMaker Pipeline de Iris.
       ServiceRole: !ImportValue
-        Fn::Sub: "${ProjectName}-CodeBuildServiceRoleArn" # <-- CORRECCIÓN APLICADA AQUÍ (1)
+        Fn::Sub: "${ProjectName}-CodeBuildServiceRoleArn"
       Artifacts:
         Type: NO_ARTIFACTS # CodeBuild no necesita subir artefactos a CodePipeline en este caso
       Environment:
-        ComputeType: BUILD_GENERAL1_SMALL # O MEDIUM/LARGE según necesidad
+        ComputeType: BUILD_GENERAL1_SMALL # O MEDIUM/LARGE segun necesidad
         Image: aws/codebuild/python:3.9-on-debian-11 # Una imagen con Python 3.9
         Type: LINUX_CONTAINER
         EnvironmentVariables:
@@ -50,13 +50,13 @@ Resources:
             Value: !Ref "AWS::Region"
           - Name: S3_ARTIFACT_BUCKET
             Value: !ImportValue
-              Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName" # <-- CORRECCIÓN APLICADA AQUÍ (2)
+              Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName"
           - Name: SAGEMAKER_EXECUTION_ROLE_ARN
             Value: !ImportValue
-              Fn::Sub: "${ProjectName}-SageMakerExecutionRoleArn" # <-- CORRECCIÓN APLICADA AQUÍ (3)
+              Fn::Sub: "${ProjectName}-SageMakerExecutionRoleArn"
           - Name: SAGEMAKER_MODEL_PACKAGE_GROUP_NAME
             Value: !ImportValue
-              Fn::Sub: "${ProjectName}-IrisModelPackageGroupName" # <-- CORRECCIÓN APLICADA AQUÍ (4)
+              Fn::Sub: "${ProjectName}-IrisModelPackageGroupName"
           - Name: SAGEMAKER_BASE_JOB_PREFIX
             Value: !Sub "${ProjectName}-pipeline" # Prefijo para trabajos de SageMaker dentro del pipeline
       Source:
@@ -72,11 +72,11 @@ Resources:
     Properties:
       Name: !Sub "${ProjectName}-MLOps-Pipeline"
       RoleArn: !ImportValue
-        Fn::Sub: "${ProjectName}-CodePipelineServiceRoleArn" # <-- CORRECCIÓN APLICADA AQUÍ (5)
+        Fn::Sub: "${ProjectName}-CodePipelineServiceRoleArn"
       ArtifactStore:
         Type: S3
         Location: !ImportValue
-          Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName" # <-- CORRECCIÓN APLICADA AQUÍ (6)
+          Fn::Sub: "${ProjectName}-MLOpsArtifactsBucketName"
       Stages:
         - Name: Source
           Actions:
@@ -106,9 +106,9 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildProject
               RunOrder: 1
-      Tags:
-        - Key: Project
-          Value: !Ref ProjectName
+          Tags:
+            - Key: Project
+              Value: !Ref ProjectName
 
 Outputs:
   CodeBuildProjectName:
