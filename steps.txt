@@ -1,0 +1,30 @@
+CODE BUILD: Conexiones - GITHUB:  mi-github-conexion-iris
+
+EJECUTAR DOS PILAS:
+1) IAM
+
+aws cloudformation deploy `
+  --stack-name IrisMLOps-MainStack `
+  --template-file infrastructure/main_stack.yaml `
+  --capabilities CAPABILITY_NAMED_IAM `
+  --region us-east-1
+
+
+2) CODEPIPELINE
+
+aws cloudformation deploy `
+  --stack-name IrisMLOps-CodePipelineStack `
+  --template-file infrastructure/codepipeline_stack.yaml `
+  --capabilities CAPABILITY_NAMED_IAM `
+  --parameter-overrides `
+    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/5a620621-89fe-4ecf-b3eb-91c7e289030d" `
+    GitHubRepositoryOwner="AlbertStats19" `
+    GitHubRepositoryName="AWSML" `
+    GitHubBranchName="main" `
+  --region us-east-1
+
+
+
+### DELETE CODE BUILD
+aws cloudformation delete-stack --stack-name IrisMLOps-MainStack --region us-east-1
+aws cloudformation delete-stack --stack-name IrisMLOps-CodePipelineStack --region us-east-1

@@ -1,4 +1,38 @@
-# roles IAM
+# roles IAM: iris-mlops-CodePipelineServiceRole
+# AdministratorAccess
+# AmazonElasticContainerRegistryPublicFullAccess
+# AmazonSageMakerFullAccess
+# AWSCodeBuildAdminAccess
 # AWSCodePipeline_FullAccess
-# AWSCodePipeline_FullAccess
-# AWSCodePipeline_FullAccess
+
+
+
+# NEW POLICY SAGEMAKER NOTEBOOKS
+IrisMlopsS3CustomPolicy
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:DeleteObject",
+                "s3:AbortMultipartUpload"
+            ],
+            "Resource": [
+                "arn:aws:s3:::albertstats19-mlops-iris-bucket",
+                "arn:aws:s3:::albertstats19-mlops-iris-bucket/*"
+            ]
+        }
+    ]
+}
+
+Agregar a ROL:
+SGMLOPS 
+
+Otorgar tambien estos: 
+AmazonSageMakerFullAccess
+AmazonSageMakerReadOnly
