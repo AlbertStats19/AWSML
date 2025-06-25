@@ -17,7 +17,7 @@ aws cloudformation deploy `
   --template-file infrastructure/codepipeline_stack.yaml `
   --capabilities CAPABILITY_NAMED_IAM `
   --parameter-overrides `
-    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/6737e7ee-a67d-4b7b-91ef-be675a693aa7" `
+    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/e6b4a0ff-ed00-4ec5-86f3-bfee3e1dfd2f" `
     GitHubRepositoryOwner="AlbertStats19" `
     GitHubRepositoryName="AWSML" `
     GitHubBranchName="main" `
@@ -28,3 +28,10 @@ aws cloudformation deploy `
 ### DELETE CODE BUILD
 aws cloudformation delete-stack --stack-name IrisMLOps-MainStack --region us-east-1
 aws cloudformation delete-stack --stack-name IrisMLOps-CodePipelineStack --region us-east-1
+
+
+### DELETE PIPELINES
+aws sagemaker list-pipelines --region us-east-1
+
+aws sagemaker delete-pipeline --pipeline-name iris-mlops-pipeline-IrisMLOpsPipeline --region us-east-1
+aws sagemaker delete-pipeline --pipeline-name iris-mlops-p-IrisMLOpsPipeline --region us-east-1
