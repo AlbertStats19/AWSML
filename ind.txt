@@ -8,6 +8,7 @@
 
 
 # NEW POLICY SAGEMAKER NOTEBOOKS
+# Jupyter Notebooks
 IrisMlopsS3CustomPolicy
 
 {
