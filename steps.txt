@@ -24,7 +24,7 @@ aws cloudformation deploy `
   --region us-east-1
 
 
-# Lanzar el pipeline
+# Lanzar el pipeline / PERMISOS
 aws sagemaker list-pipelines --region us-east-1
 aws sagemaker start-pipeline-execution --pipeline-name iris-mlops-pipeline-IrisMLOpsPipeline --region us-east-1
 
