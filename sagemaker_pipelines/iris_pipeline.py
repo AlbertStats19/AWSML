@@ -15,6 +15,9 @@ from sagemaker.workflow.parameters import (
     ParameterString,
 )
 
+# parameter_custom_lib = "ml.m5.large"
+parameter_custom_lib = "ml.t3.medium"
+
 # La función get_sagemaker_pipeline ahora aceptará los parámetros
 # que serán inyectados por CodeBuild.
 def get_sagemaker_pipeline(
@@ -44,7 +47,7 @@ def get_sagemaker_pipeline(
     get_data_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
         role=role,
-        instance_type="ml.m5.large",
+        instance_type=parameter_custom_lib,
         instance_count=1,
         base_job_name=f"{base_job_prefix}-get-data",
         sagemaker_session=sagemaker_session,
@@ -63,7 +66,7 @@ def get_sagemaker_pipeline(
     preprocess_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
         role=role,
-        instance_type="ml.m5.large",
+        instance_type=parameter_custom_lib,
         instance_count=1,
         base_job_name=f"{base_job_prefix}-preprocess",
         sagemaker_session=sagemaker_session,
@@ -87,7 +90,7 @@ def get_sagemaker_pipeline(
     split_data_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
         role=role,
-        instance_type="ml.m5.large",
+        instance_type=parameter_custom_lib,
         instance_count=1,
         base_job_name=f"{base_job_prefix}-split-data",
         sagemaker_session=sagemaker_session,
@@ -110,7 +113,7 @@ def get_sagemaker_pipeline(
     sklearn_estimator = SKLearn(
         entry_point=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ml_code/train_model.py"),
         role=role,
-        instance_type="ml.m5.large",
+        instance_type=parameter_custom_lib,
         framework_version="1.0-1",
         base_job_name=f"{base_job_prefix}-train",
         sagemaker_session=sagemaker_session,
@@ -131,7 +134,7 @@ def get_sagemaker_pipeline(
     evaluation_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
         role=role,
-        instance_type="ml.m5.large",
+        instance_type=parameter_custom_lib,
         instance_count=1,
         base_job_name=f"{base_job_prefix}-evaluate",
         sagemaker_session=sagemaker_session,
@@ -203,7 +206,7 @@ def get_sagemaker_pipeline(
     register_model_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
         role=role,
-        instance_type="ml.m5.large",
+        instance_type=parameter_custom_lib,
         instance_count=1,
         base_job_name=f"{base_job_prefix}-register-model",
         sagemaker_session=sagemaker_session,
@@ -238,7 +241,7 @@ def get_sagemaker_pipeline(
     batch_predict_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
         role=role,
-        instance_type="ml.m5.large",
+        instance_type=parameter_custom_lib,
         instance_count=1,
         base_job_name=f"{base_job_prefix}-batch-predict",
         sagemaker_session=sagemaker_session,
