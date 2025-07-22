@@ -32,7 +32,8 @@ import joblib
 import os
 
 # Rutas estándar en SageMaker
-input_dir = "/opt/ml/processing/input"
+# input_dir = "/opt/ml/processing/input"
+input_dir = "/opt/ml/input/data/training"
 model_dir = "/opt/ml/model"
 
 # Cargar datos de entrenamiento
