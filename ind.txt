@@ -5,7 +5,7 @@
 # AWSCodeBuildAdminAccess
 # AWSCodePipeline_FullAccess
 
-
+# training job usage: parameter_train_job = "ml.c5.xlarge"
 
 # NEW POLICY SAGEMAKER NOTEBOOKS
 # Jupyter Notebooks

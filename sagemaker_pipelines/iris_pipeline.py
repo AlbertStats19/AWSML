@@ -19,6 +19,7 @@ from sagemaker.workflow.parameters import (
 parameter_custom_lib = "ml.t3.medium"
 parameter_train_job = "ml.c5.xlarge"
 
+
 # La función get_sagemaker_pipeline ahora aceptará los parámetros
 # que serán inyectados por CodeBuild.
 def get_sagemaker_pipeline(
