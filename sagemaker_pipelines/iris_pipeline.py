@@ -53,12 +53,25 @@ def get_sagemaker_pipeline(
         sagemaker_session=sagemaker_session,
         command=["python3"], # <--- CORRECCIÓN CLAVE
     )
+    #get_data_step = ProcessingStep(
+    #    name="GetData",
+    #    processor=get_data_processor,
+    #    outputs=[ProcessingOutput(source="/opt/ml/processing/output", destination=f"s3://{default_bucket}/iris-data/raw")],
+    #    # La ruta del código debe ser relativa al directorio donde se ejecuta el pipeline.py
+    #    # Cuando CodeBuild ejecute este archivo, CodeBuild estará en el directorio raíz del repo.
+    #    code=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ml_code/get_data.py"),
+    #)
+
     get_data_step = ProcessingStep(
         name="GetData",
         processor=get_data_processor,
-        outputs=[ProcessingOutput(source="/opt/ml/processing/output", destination=f"s3://{default_bucket}/iris-data/raw")],
-        # La ruta del código debe ser relativa al directorio donde se ejecuta el pipeline.py
-        # Cuando CodeBuild ejecute este archivo, CodeBuild estará en el directorio raíz del repo.
+        outputs=[
+        ProcessingOutput(
+            source="/opt/ml/processing/output",
+            destination=f"s3://{default_bucket}/iris-data/raw",
+            output_name="output"   # ✅ ESTE NOMBRE ES CLAVE
+        )
+        ],
         code=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ml_code/get_data.py"),
     )
 
