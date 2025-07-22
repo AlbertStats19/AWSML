@@ -27,7 +27,7 @@ aws cloudformation deploy `
 # Lanzar el pipeline / PERMISOS
 aws sagemaker list-pipelines --region us-east-1
 
-# Ejecutar
+# Ejecutar (LANZAR PIPELINE)
 aws sagemaker start-pipeline-execution --pipeline-name iris-mlops-pipeline-IrisMLOpsPipeline --region us-east-1
 
 # Ver pipeline
@@ -37,7 +37,7 @@ crear dominio previamente
 aws sagemaker list-pipelines --region us-east-1
 
 # Ver análisis pipeline (TOMAR EL arn)
-aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sagemaker:us-east-1:503427799533:pipeline/iris-mlops-pipeline-IrisMLOpsPipeline/execution/qky0crnq5phx --region us-east-1
+aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sagemaker:us-east-1:503427799533:pipeline/iris-mlops-pipeline-IrisMLOpsPipeline/execution/ufwgkqboslm6 --region us-east-1
 
 # Ver análisis cuotas
 aws service-quotas get-service-quota --service-code sagemaker --quota-code L-1216C47A --region us-east-1
