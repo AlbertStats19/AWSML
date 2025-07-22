@@ -6,8 +6,8 @@ import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    #parser.add_argument('--input-data-dir', type=str, default=os.environ.get('SM_CHANNEL_INPUT_DATA'))
-    parser.add_argument('--input-data-dir', type=str, default=os.environ.get('SM_CHANNEL_INPUT'))
+    parser.add_argument('--input-data-dir', type=str, default=os.environ.get('SM_CHANNEL_INPUT_DATA'))
+    #parser.add_argument('--input-data-dir', type=str, default=os.environ.get('SM_CHANNEL_INPUT'))
     parser.add_argument('--output-data-dir', type=str, default=os.environ.get('SM_OUTPUT_DATA_DIR'))
     parser.add_argument('--model-dir', type=str, default=os.environ.get('SM_MODEL_DIR')) # Para guardar el scaler
     args = parser.parse_args()

@@ -90,7 +90,8 @@ def get_sagemaker_pipeline(
         processor=preprocess_processor,
         inputs=[ProcessingInput(
             source=get_data_step.properties.ProcessingOutputConfig.Outputs["output"].S3Output.S3Uri,
-            destination="/opt/ml/processing/input"
+            destination="/opt/ml/processing/input",
+            input_name="input_data"
         )],
         outputs=[
             ProcessingOutput(source="/opt/ml/processing/output", destination=f"s3://{default_bucket}/iris-data/processed"),
