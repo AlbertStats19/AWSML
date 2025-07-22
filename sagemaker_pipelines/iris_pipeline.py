@@ -17,7 +17,7 @@ from sagemaker.workflow.parameters import (
 
 # parameter_custom_lib = "ml.m5.large"
 # parameter_custom_lib = "ml.t3.medium"
-# validar métrica
+# validar métrica Training
 parameter_custom_lib ="ml.m5.xlarge"
 
 # La función get_sagemaker_pipeline ahora aceptará los parámetros
