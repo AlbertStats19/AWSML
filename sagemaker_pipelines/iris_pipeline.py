@@ -17,8 +17,7 @@ from sagemaker.workflow.parameters import (
 
 # parameter_custom_lib = "ml.m5.large"
 parameter_custom_lib = "ml.t3.medium"
-# validar métrica Training
-# parameter_custom_lib ="ml.m5.xlarge"
+parameter_train_job = "ml.c5.xlarge"
 
 # La función get_sagemaker_pipeline ahora aceptará los parámetros
 # que serán inyectados por CodeBuild.
@@ -130,11 +129,14 @@ def get_sagemaker_pipeline(
     sklearn_estimator = SKLearn(
         entry_point=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ml_code/train_model.py"),
         role=role,
-        instance_type=parameter_custom_lib,
+        instance_type=parameter_train_job,
         framework_version="1.0-1",
         base_job_name=f"{base_job_prefix}-train",
         sagemaker_session=sagemaker_session,
         output_path=f"s3://{default_bucket}/iris-artifacts/model",
+        use_spot_instances=True,
+        max_wait=3600,
+        max_run=1800
     )
     train_step = TrainingStep(
         name="TrainModel",
