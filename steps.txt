@@ -17,7 +17,7 @@ aws cloudformation deploy `
   --template-file infrastructure/codepipeline_stack.yaml `
   --capabilities CAPABILITY_NAMED_IAM `
   --parameter-overrides `
-    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/1a9ccd34-c260-482a-a936-b359a2935692" `
+    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/0d6be10f-26dc-42c6-968a-5f342da21095" `
     GitHubRepositoryOwner="AlbertStats19" `
     GitHubRepositoryName="AWSML" `
     GitHubBranchName="main" `
