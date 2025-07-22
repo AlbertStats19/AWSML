@@ -94,7 +94,7 @@ def get_sagemaker_pipeline(
             # input_name="input_data"
         )],
         outputs=[
-            ProcessingOutput(source="/opt/ml/processing/output", destination=f"s3://{default_bucket}/iris-data/processed"),
+            ProcessingOutput(source="/opt/ml/processing/output", destination=f"s3://{default_bucket}/iris-data/processed",  output_name="output" ),
             # ProcessingOutput(source="/opt/ml/model", destination=f"s3://{default_bucket}/iris-artifacts/scaler", output_name="scaler_model")
             ProcessingOutput(source="/opt/ml/processing/scaler", destination=f"s3://{default_bucket}/iris-artifacts/scaler", output_name="scaler_model")
         ],
@@ -119,7 +119,7 @@ def get_sagemaker_pipeline(
             destination="/opt/ml/processing/input"
         )],
         outputs=[
-            ProcessingOutput(source="/opt/ml/processing/output", destination=f"s3://{default_bucket}/iris-data/split")
+            ProcessingOutput(source="/opt/ml/processing/output", destination=f"s3://{default_bucket}/iris-data/split",output_name="output")
         ],
         code=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ml_code/split_data.py"),
     )
