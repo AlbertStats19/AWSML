@@ -66,7 +66,7 @@ print("==> Iniciando predicción por lotes...")
 # Rutas
 compressed_model_path = "/opt/ml/processing/model/model.tar.gz"
 extracted_model_path = "/opt/ml/processing/model/model.joblib"
-input_data_path = "/opt/ml/processing/input/data.csv"
+input_data_path = "/opt/ml/processing/input/iris_raw.csv"
 config_path = "/opt/ml/processing/config/prod_config.json"
 output_path = "/opt/ml/processing/output/batch_pred.csv"
 
@@ -81,6 +81,7 @@ model = joblib.load(extracted_model_path)
 
 # Cargar datos
 df = pd.read_csv(input_data_path)
+df = df.get([x for x in df.columns if x not in ["target"]]).copy()
 
 # Hacer predicciones
 df["prediction"] = model.predict(df)
