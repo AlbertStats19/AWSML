@@ -56,53 +56,45 @@
 #    print(f"Batch predictions saved to {output_path}")
 
 import os
+import tarfile
 import pandas as pd
 import joblib
-import numpy as np
 import json
-from sklearn.datasets import load_iris
 
-if __name__ == '__main__':
-    print("==> Iniciando predicción por lotes...")
+print("==> Iniciando predicción por lotes...")
 
-    model_dir = os.environ['SM_MODEL_DIR']
-    input_data_dir = os.environ['SM_CHANNEL_INPUT_DATA']
-    config_dir = os.environ['SM_CHANNEL_CONFIG']
-    output_data_dir = os.environ['SM_OUTPUT_DATA_DIR']
+# Rutas
+compressed_model_path = "/opt/ml/processing/model/model.tar.gz"
+extracted_model_path = "/opt/ml/processing/model/model.joblib"
+input_data_path = "/opt/ml/processing/input/data.csv"
+config_path = "/opt/ml/processing/config/prod_config.json"
+output_path = "/opt/ml/processing/output/batch_pred.csv"
 
-    # Cargar modelo y scaler
-    model = joblib.load(os.path.join(model_dir, "model.joblib"))
-    scaler = joblib.load(os.path.join(model_dir, "scaler.joblib"))
+# Descomprimir el modelo
+print("==> Descomprimiendo modelo...")
+with tarfile.open(compressed_model_path, "r:gz") as tar:
+    tar.extractall(path="/opt/ml/processing/model")
 
-    # Leer configuración
-    config_path = os.path.join(config_dir, 'prod_config.json')
-    with open(config_path, 'r') as f:
-        config = json.load(f)
-    
-    batch_config = config["BATCH_PREDICTION"]
-    sample_rate = batch_config["SAMPLE_RATE"]
-    output_file_name = batch_config["OUTPUT_FILE_NAME"]
+# Cargar modelo descomprimido
+print("==> Cargando modelo descomprimido...")
+model = joblib.load(extracted_model_path)
 
-    # Leer los datos procesados
-    df = pd.read_csv(os.path.join(input_data_dir, 'iris_processed.csv'))
-    X = df.drop('target', axis=1).values
+# Cargar datos
+df = pd.read_csv(input_data_path)
 
-    # Muestreo
-    np.random.seed(42)
-    n_samples = int(len(X) * sample_rate)
-    sample_idx = np.random.choice(len(X), n_samples, replace=False)
-    X_batch = X[sample_idx]
+# Hacer predicciones
+df["prediction"] = model.predict(df)
 
-    # Predicciones
-    preds = model.predict(X_batch)
+# Leer configuración
+with open(config_path, "r") as f:
+    config = json.load(f)
 
-    # Resultado
-    feature_names = load_iris().feature_names
-    df_out = pd.DataFrame(X_batch, columns=feature_names)
-    df_out["prediction"] = preds
+sample_rate = config["BATCH_PREDICTION"]["SAMPLE_RATE"]
+output_file_name = config["BATCH_PREDICTION"]["OUTPUT_FILE_NAME"]
 
-    # Guardar
-    output_path = os.path.join(output_data_dir, output_file_name)
-    df_out.to_csv(output_path, index=False, sep=";", decimal=",")
+# Tomar muestra
+df_sample = df.sample(frac=sample_rate)
 
-    print(f"✅ Predicciones guardadas en {output_path}")
+# Guardar predicciones
+df_sample.to_csv(output_path, index=False)
+print(f"==> Predicciones guardadas en: {output_path}")

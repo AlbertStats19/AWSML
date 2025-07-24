@@ -17,7 +17,7 @@ aws cloudformation deploy `
   --template-file infrastructure/codepipeline_stack.yaml `
   --capabilities CAPABILITY_NAMED_IAM `
   --parameter-overrides `
-    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/0f5b6870-5768-426d-be6c-7f02d6edb23c" `
+    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/c3d624c7-1dbe-49f8-8ba2-ffcf8ffe0a05" `
     GitHubRepositoryOwner="AlbertStats19" `
     GitHubRepositoryName="AWSML" `
     GitHubBranchName="main" `
@@ -37,7 +37,7 @@ crear dominio previamente
 aws sagemaker list-pipelines --region us-east-1
 
 # Ver análisis pipeline (TOMAR EL arn)
-aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sagemaker:us-east-1:503427799533:pipeline/iris-mlops-pipeline-IrisMLOpsPipeline/execution/8vtetwn1zsuh --region us-east-1
+aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sagemaker:us-east-1:503427799533:pipeline/iris-mlops-pipeline-IrisMLOpsPipeline/execution/q7kvzmhavcox --region us-east-1
 
 # Ver análisis cuotas
 aws service-quotas get-service-quota --service-code sagemaker --quota-code L-1216C47A --region us-east-1

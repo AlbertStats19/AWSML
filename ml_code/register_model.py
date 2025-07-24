@@ -127,63 +127,57 @@
 #        raise # Re-lanzar la excepción para que el trabajo falle
 
 
+import joblib
 import os
 import json
 import boto3
-import joblib
-from sagemaker import image_uris, get_execution_role, Session
-from sagemaker.model import Model
+from sagemaker import ModelPackage
+from sagemaker.session import Session
 
-if __name__ == "__main__":
-    print("==> Iniciando registro del modelo")
+# Rutas fijas para entradas y config
+model_dir = "/opt/ml/processing/model_data/model.joblib"
+config_path = "/opt/ml/processing/config/register_config.json"
+evaluation_path = "/opt/ml/processing/evaluation/evaluation.json"
 
-    # Leer configuración
-    config_path = "/opt/ml/processing/config/register_config.json"
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Archivo no encontrado: {config_path}")
-    
-    with open(config_path, "r") as f:
-        config = json.load(f)
+# Cargar configuración de registro
+with open(config_path, "r") as f:
+    config = json.load(f)
 
-    model_package_group_name = config.get("model_package_group_name")
-    if not model_package_group_name:
-        raise ValueError("Falta model_package_group_name en el archivo JSON")
+model_package_group_name = config["model_package_group_name"]
+region = config["region"]
+role_arn = config["role_arn"]
 
-    # Ruta al modelo
-    model_artifact_path_local = "/opt/ml/processing/model_data/model.tar.gz"
-    if not os.path.exists(model_artifact_path_local):
-        raise FileNotFoundError(f"No se encontró el modelo: {model_artifact_path_local}")
+# Cargar métricas del modelo
+with open(evaluation_path, "r") as f:
+    evaluation = json.load(f)
 
-    model_data_s3_uri = os.environ.get("SM_CHANNEL_MODEL_DATA_S3_URI")
-    if not model_data_s3_uri:
-        raise EnvironmentError("Falta variable de entorno SM_CHANNEL_MODEL_DATA_S3_URI")
+metrics = evaluation.get("metrics", {})
+accuracy = metrics.get("test_accuracy", {}).get("value", 0)
 
-    aws_region = os.environ.get("AWS_REGION", "us-east-1")
-    boto_session = boto3.Session(region_name=aws_region)
-    sagemaker_session = Session(boto_session=boto_session)
+# Crear Session y registrar
+boto_session = boto3.Session(region_name=region)
+sm_session = Session(boto_session=boto_session)
 
-    try:
-        role = get_execution_role(sagemaker_session)
-    except Exception:
-        role = os.environ.get("AWS_ROLE_ARN")
-        if not role:
-            raise Exception("No se pudo determinar el ARN del rol de IAM")
+model_package = ModelPackage(
+    role=role_arn,
+    model_data=model_dir,
+    image_uri="683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.0-1-cpu-py3",
+    sagemaker_session=sm_session
+)
 
-    print("==> Creando objeto modelo de SageMaker...")
-    model = Model(
-        image_uri=image_uris.retrieve(framework="sklearn", region=aws_region, version="1.0-1", instance_type="ml.m5.large", image_scope="training"),
-        model_data=model_data_s3_uri,
-        role=role,
-        sagemaker_session=sagemaker_session
-    )
-
-    print("==> Registrando modelo en el Model Package Group...")
-    model_package = model.register(
-        content_types=["text/csv"],
-        response_types=["text/csv"],
-        inference_instances=["ml.m5.large"],
-        transform_instances=["ml.m5.large"],
-        model_package_group_name=model_package_group_name
-    )
-
-    print(f"✅ Modelo registrado exitosamente: {model_package.model_package_arn}")
+model_package.register(
+    content_types=["text/csv"],
+    response_types=["text/csv"],
+    model_package_group_name=model_package_group_name,
+    model_metrics={
+        "EvaluationMetrics": {
+            "Metrics": {
+                "test_accuracy": {
+                    "Value": accuracy,
+                    "StandardMetricName": "Accuracy"
+                }
+            }
+        }
+    },
+    approval_status="PendingManualApproval"
+)
