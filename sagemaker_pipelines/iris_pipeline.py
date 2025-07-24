@@ -277,7 +277,7 @@ def get_sagemaker_pipeline(
                 destination="/opt/ml/processing/model"
             ),
             ProcessingInput(
-                source=preprocess_step.properties.ProcessingOutputConfig.Outputs["output"].S3Output.S3Uri, # Para datos procesados completos
+                source=get_data_step.properties.ProcessingOutputConfig.Outputs["output"].S3Output.S3Uri, # Para datos procesados completos
                 destination="/opt/ml/processing/input"
             ),
             # Asumiendo que el script de batch_predict.py también necesita una configuración

@@ -1,5 +1,6 @@
 {
   "model_package_group_name": "iris-model-group",
   "region": "us-east-1",
-  "role_arn": "arn:aws:iam::503427799533:role/SageMakerExecutionRole"
+  "role_arn": "arn:aws:iam::503427799533:role/SageMakerExecutionRole",
+  "image_uri": "683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.0-1-cpu-py3"
 }

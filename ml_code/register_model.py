@@ -127,50 +127,54 @@
 #        raise # Re-lanzar la excepción para que el trabajo falle
 
 
-import joblib
+import boto3
 import os
 import json
-import boto3
-from sagemaker import ModelPackage
-from sagemaker.session import Session
 
-# Rutas fijas para entradas y config
+# Rutas fijas para inputs y configuración
 model_dir = "/opt/ml/processing/model_data/model.joblib"
 config_path = "/opt/ml/processing/config/register_config.json"
 evaluation_path = "/opt/ml/processing/evaluation/evaluation.json"
 
-# Cargar configuración de registro
+# Cargar configuración
 with open(config_path, "r") as f:
     config = json.load(f)
 
 model_package_group_name = config["model_package_group_name"]
 region = config["region"]
 role_arn = config["role_arn"]
+image_uri = config["image_uri"]  # Debes incluir este campo en register_config.json
 
-# Cargar métricas del modelo
+# Leer métricas de evaluación
 with open(evaluation_path, "r") as f:
     evaluation = json.load(f)
 
-metrics = evaluation.get("metrics", {})
-accuracy = metrics.get("test_accuracy", {}).get("value", 0)
+accuracy = evaluation.get("metrics", {}).get("test_accuracy", {}).get("value", 0)
 
-# Crear Session y registrar
-boto_session = boto3.Session(region_name=region)
-sm_session = Session(boto_session=boto_session)
+# Inicializar cliente boto3
+sm_client = boto3.client("sagemaker", region_name=region)
 
-model_package = ModelPackage(
-    role=role_arn,
-    model_data=model_dir,
-    image_uri="683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.0-1-cpu-py3",
-    sagemaker_session=sm_session
-)
-
-model_package.register(
-    content_types=["text/csv"],
-    response_types=["text/csv"],
-    model_package_group_name=model_package_group_name,
-    model_metrics={
-        "EvaluationMetrics": {
+# Registrar el modelo
+response = sm_client.create_model_package(
+    ModelPackageGroupName=model_package_group_name,
+    ModelPackageDescription="Registro automático desde pipeline sin sagemaker lib",
+    InferenceSpecification={
+        "Containers": [
+            {
+                "Image": image_uri,
+                "ModelDataUrl": model_dir,
+                "Environment": {}
+            }
+        ],
+        "SupportedContentTypes": ["text/csv"],
+        "SupportedResponseMIMETypes": ["text/csv"]
+    },
+    ModelMetrics={
+        "ModelQuality": {
+            "Statistics": {
+                "ContentType": "application/json",
+                "S3Uri": "s3://TU_BUCKET/TU_RUTA/evaluation.json"  # Si quieres adjuntarlo desde S3
+            },
             "Metrics": {
                 "test_accuracy": {
                     "Value": accuracy,
@@ -179,5 +183,9 @@ model_package.register(
             }
         }
     },
-    approval_status="PendingManualApproval"
+    CertifyForMarketplace=False,
+    ApprovalStatus="PendingManualApproval",
+    RoleArn=role_arn
 )
+
+print("==> Registro completado:", response["ModelPackageArn"])
