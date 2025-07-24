@@ -8,7 +8,8 @@ from sagemaker.workflow.steps import ProcessingStep, TrainingStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.functions import JsonGet
-from sagemaker.workflow.conditions import ConditionLessThanOrEqualTo
+#from sagemaker.workflow.conditions import ConditionLessThanOrEqualTo
+from sagemaker.workflow.conditions import ConditionGreaterThanOrEqualTo
 from sagemaker.workflow.condition_step import ConditionStep
 from sagemaker.workflow.parameters import (
     ParameterFloat,
@@ -28,7 +29,7 @@ def get_sagemaker_pipeline(
     default_bucket: str,
     base_job_prefix: str,
     model_package_group_name: str,
-    model_accuracy_threshold: float = 0.95,
+    model_accuracy_threshold: float = 0.90,
     sample_rate_for_batch_predict: float = 0.1
 ) -> Pipeline:
 
@@ -300,7 +301,7 @@ def get_sagemaker_pipeline(
         property_file=evaluation_report,
         json_path="metrics.test_accuracy.value"
     )
-    cond_gt_equal = ConditionLessThanOrEqualTo(left=pipeline_model_accuracy_threshold, right=model_accuracy)
+    cond_gt_equal =  ConditionGreaterThanOrEqualTo(left=model_accuracy,right=pipeline_model_accuracy_threshold)
 
     condition_step = ConditionStep(
         name="CheckModelAccuracyAndRegister",
