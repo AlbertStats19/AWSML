@@ -196,6 +196,8 @@ def get_sagemaker_pipeline(
     # Crearemos un archivo JSON temporal con la configuración para el registro
     # y lo subiremos a S3 para que el script de registro lo lea.
     # Esto es crucial para pasar `model_package_group_name` sin usar `arguments`.
+    
+    image_uri = sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1")
     register_config_data = {
         "model_package_group_name": model_package_group_name,
         "region": region,
