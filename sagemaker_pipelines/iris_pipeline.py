@@ -200,6 +200,7 @@ def get_sagemaker_pipeline(
         "model_package_group_name": model_package_group_name,
         "region": region,
         "role_arn": role,
+        "image_uri": image_uri
     }
     
     # Ruta local para el archivo de configuración temporal
