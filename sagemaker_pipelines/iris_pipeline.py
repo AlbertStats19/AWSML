@@ -211,7 +211,7 @@ def get_sagemaker_pipeline(
         "region": region,
         "role_arn": role,
         "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
-        "model_data_url": str(train_step.properties.ModelArtifacts.S3ModelArtifacts),
+        "model_data_url": str(train_step.properties.ModelArtifacts.S3ModelArtifacts.expr),
         "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
     }
 
