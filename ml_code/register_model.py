@@ -26,7 +26,7 @@ response = sm_client.create_model_package(
             }
         ],
         "SupportedContentTypes": ["text/csv"],
-        "SupportedResponseTypes": ["text/csv"]
+        "SupportedResponseMIMETypes": ["text/csv"]
     },
     ModelApprovalStatus="PendingManualApproval",  # ✅ Este es el correcto
     ModelMetrics={
