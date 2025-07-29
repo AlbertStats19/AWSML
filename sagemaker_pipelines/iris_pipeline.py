@@ -201,7 +201,9 @@ def get_sagemaker_pipeline(
         "model_package_group_name": model_package_group_name,
         "region": region,
         "role_arn": role,
-        "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1")
+        "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
+        "model_data_url": f"s3://{default_bucket}/iris-artifacts/model/model.tar.gz",
+        "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
     }
     
     # Ruta local para el archivo de configuración temporal
