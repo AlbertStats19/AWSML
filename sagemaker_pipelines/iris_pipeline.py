@@ -197,13 +197,14 @@ def get_sagemaker_pipeline(
     # y lo subiremos a S3 para que el script de registro lo lea.
     # Esto es crucial para pasar `model_package_group_name` sin usar `arguments`.
     
+    
     register_config_data = {
-        "model_package_group_name": model_package_group_name,
-        "region": region,
-        "role_arn": role,
-        "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
-        "model_data_url": f"s3://{default_bucket}/iris-artifacts/model/model.tar.gz",
-        "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
+    "model_package_group_name": model_package_group_name,
+    "region": region,
+    "role_arn": role,
+    "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
+    "model_data_url": train_step.properties.ModelArtifacts.S3ModelArtifacts,
+    "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
     }
     
     # Ruta local para el archivo de configuración temporal
