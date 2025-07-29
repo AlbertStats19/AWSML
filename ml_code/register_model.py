@@ -14,7 +14,7 @@ evaluation_s3_uri = config["evaluation_s3_uri"]
 # Crear cliente boto3
 sm_client = boto3.client("sagemaker", region_name=region)
 
-# Registrar modelo
+# Registrar modelo en SageMaker Model Registry
 response = sm_client.create_model_package(
     ModelPackageGroupName=model_package_group_name,
     ModelPackageDescription="Modelo Iris con métrica",
@@ -28,7 +28,7 @@ response = sm_client.create_model_package(
         "SupportedContentTypes": ["text/csv"],
         "SupportedResponseMIMETypes": ["text/csv"]
     },
-    ModelApprovalStatus="PendingManualApproval",
+    ModelApprovalStatus="PendingManualApproval",  # ✅ Este es el correcto
     ModelMetrics={
         "ModelQuality": {
             "Statistics": {
@@ -39,5 +39,5 @@ response = sm_client.create_model_package(
     }
 )
 
-print("✅ Modelo registrado exitosamente:")
+print("Modelo registrado exitosamente:")
 print(response["ModelPackageArn"])
