@@ -360,25 +360,7 @@ if __name__ == "__main__":
         model_package_group_name=model_package_group_name,
     )
     
-    print(f"\n Bucket en uso por este pipeline en AWS: {default_bucket}\n")  # ESTA ES LA LÍNEA CLAVE
-
     # Upsert el pipeline (crea o actualiza la definición del pipeline en SageMaker)
     print(f"Upserting SageMaker Pipeline: {pipeline.name}")
     # El role_arn en upsert es el rol que el pipeline usará para llamar a otros servicios.
     pipeline.upsert(role_arn=role) 
-
-    # IMPORTANTE: En un pipeline de CI/CD, usualmente NO inicias la ejecución del SageMaker Pipeline
-    # inmediatamente después de su upsert.
-    # La ejecución del pipeline de ML (SageMaker Pipeline) se suele disparar:
-    # 1. Manualmente desde la consola.
-    # 2. Por un evento de CloudWatch (ej. carga de nuevos datos a S3).
-    # 3. Como un paso posterior en el CodePipeline si lo quieres encadenar.
-    #
-    # Si quieres que CodeBuild inicie una ejecución *automáticamente* cada vez que se actualiza el pipeline,
-    # entonces mantén las siguientes líneas. Si no, coméntalas.
-    # Por ahora, las dejo comentadas para darte la opción, ya que el patrón común es no disparar inmediatamente.
-    #
-    # print(f"Starting SageMaker Pipeline execution for: {pipeline.name}")
-    # execution = pipeline.start()
-    # print(f"SageMaker Pipeline execution ARN: {execution.arn}")
-    # print("SageMaker Pipeline execution initiated. Check SageMaker Pipelines console for status.")

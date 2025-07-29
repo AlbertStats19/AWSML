@@ -2,6 +2,6 @@
   "model_package_group_name": "iris-model-group",
   "region": "us-east-1",
   "image_uri": "683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.0-1-cpu-py3",
-  "model_data_url": "s3://mlops-bdb-dev/iris-artifacts/model/model.tar.gz",
-  "evaluation_s3_uri": "s3://mlops-bdb-dev/iris-artifacts/evaluation_report/evaluation.json"
+  "model_data_url": "s3://{default_bucket}/iris-artifacts/model/model.tar.gz",
+  "evaluation_s3_uri": "s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
 }

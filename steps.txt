@@ -45,8 +45,7 @@ aws service-quotas get-service-quota --service-code sagemaker --quota-code L-DC2
 aws service-quotas get-service-quota --service-code sagemaker --quota-code L-0263D0A3 --region us-east-1
 aws service-quotas get-service-quota --service-code sagemaker --quota-code L-BBD9EAAD --region us-east-1
 
-
-### DELETE CODE BUILD
+### 1. DELETE CODE BUILD
 aws cloudformation delete-stack --stack-name IrisMLOps-MainStack --region us-east-1
 aws cloudformation delete-stack --stack-name IrisMLOps-CodePipelineStack --region us-east-1
 
