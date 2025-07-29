@@ -266,7 +266,8 @@ def get_sagemaker_pipeline(
             ProcessingInput(
                 source=train_step.properties.ModelArtifacts.S3ModelArtifacts,
                 destination="/opt/ml/processing/model_data",
-                input_name="model_data" # Nombre del canal para SM_CHANNEL_MODEL_DATA_S3_URI
+                # input_name="model_data" # Nombre del canal para SM_CHANNEL_MODEL_DATA_S3_URI
+                input_name="model"
             ),
             ProcessingInput( # <-- NUEVA ENTRADA para el archivo de configuración JSON
                 source=s3_config_uri,
