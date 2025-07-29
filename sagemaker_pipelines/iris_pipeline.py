@@ -207,6 +207,7 @@ def get_sagemaker_pipeline(
     #}
 
     # MODIFICAR BATCH
+    # Editar bucket quemado
 
     register_config_data = {
         "model_package_group_name": model_package_group_name,
