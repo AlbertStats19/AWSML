@@ -1,12 +1,13 @@
 import shutil
 import os
 
-# Copia directa porque ya está en /opt/ml/processing/input como input del paso
+# Rutas en el entorno de SageMaker Processing
 input_path = "/opt/ml/processing/input/model.tar.gz"
-output_path = "/opt/ml/processing/input/model.tar.gz"  # Se queda en el mismo lugar, el pipeline lo copia a S3
+output_path = "/opt/ml/processing/output/model.tar.gz"
 
-# Verificación opcional
+# Verifica si el modelo existe y lo copia al directorio de salida
 if os.path.exists(input_path):
-    print(f"Archivo encontrado y será copiado: {input_path}")
+    shutil.copy(input_path, output_path)
+    print(f"✅ Modelo copiado correctamente a: {output_path}")
 else:
-    raise FileNotFoundError("El archivo model.tar.gz no se encontró en /opt/ml/processing/input/")
+    raise FileNotFoundError("❌ El archivo model.tar.gz no se encontró en /opt/ml/processing/input/")
