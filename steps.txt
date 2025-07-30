@@ -62,4 +62,4 @@ https://us-east-1.console.aws.amazon.com/servicequotas/home/dashboard
 
 # Ejecuciones
 aws sagemaker list-pipeline-executions --pipeline-name iris-mlops-pipeline-IrisMLOpsPipeline --region us-east-1 --query "PipelineExecutionSummaries[0].PipelineExecutionArn" --output text
-aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sagemaker:us-east-1:503427799533:pipeline/iris-mlops-pipeline-IrisMLOpsPipeline/execution/naltdlk2wg83 --region us-east-1
+aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sagemaker:us-east-1:503427799533:pipeline/iris-mlops-pipeline-IrisMLOpsPipeline/execution/jbq6r2giwpp3 --region us-east-1

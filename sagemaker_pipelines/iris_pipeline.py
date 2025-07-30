@@ -170,18 +170,19 @@ def get_sagemaker_pipeline(
     inputs=[
         ProcessingInput(
             source=train_step.properties.ModelArtifacts.S3ModelArtifacts,
-            destination="/opt/ml/processing/input"
+            destination="/opt/ml/processing/model_input"
         )
     ],
     outputs=[
         ProcessingOutput(
-            source="/opt/ml/processing/input",
+            source="/opt/ml/processing/model_output",
             destination=f"s3://{default_bucket}/iris-artifacts/model/latest",
             output_name="copied_model"
         )
     ],
     code=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ml_code/copy_model.py"),
     )
+
 
 
     # --- Paso 5: Evaluación (Evaluate Model) ---

@@ -2,8 +2,8 @@ import shutil
 import os
 
 # Rutas en el entorno de SageMaker Processing
-input_path = "/opt/ml/processing/input/model.tar.gz"
-output_path = "/opt/ml/processing/output/model.tar.gz"
+input_path = "/opt/ml/processing/model_input/model.tar.gz"
+output_path = "/opt/ml/processing/model_output/model.tar.gz"
 
 # Verifica si el modelo existe y lo copia al directorio de salida
 if os.path.exists(input_path):
