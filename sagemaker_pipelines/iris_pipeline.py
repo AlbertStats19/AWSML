@@ -156,28 +156,6 @@ def get_sagemaker_pipeline(
         property_files=[evaluation_report],
     )
 
-    register_config_data = {
-        "model_package_group_name": model_package_group_name,
-        "region": region,
-        "role_arn": role,
-        "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
-        "model_data_url": f"s3://{default_bucket}/iris-artifacts/model/model.tar.gz",
-        "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
-    }
-    register_config_file_name = "register_config.json"
-    temp_config_path = os.path.join(os.getcwd(), register_config_file_name) 
-
-    with open(temp_config_path, "w") as f:
-        json.dump(register_config_data, f)
-    
-    s3_client = boto_session.client("s3")
-    s3_config_key = f"pipeline-configs/{base_job_prefix}/{register_config_file_name}"
-    s3_config_uri = f"s3://{default_bucket}/{s3_config_key}"
-    
-    # Este 'upload_file' se ejecutará cuando CodeBuild corra este pipeline.py
-    s3_client.upload_file(temp_config_path, default_bucket, s3_config_key)
-    print(f"Archivo de configuración de registro subido a S3: {s3_config_uri}")
-
     batch_predict_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
         role=role,
@@ -194,7 +172,6 @@ def get_sagemaker_pipeline(
             ProcessingInput(source=train_step.properties.ModelArtifacts.S3ModelArtifacts, destination="/opt/ml/processing/model"),
             ProcessingInput(source=get_data_step.properties.ProcessingOutputConfig.Outputs["output"].S3Output.S3Uri, destination="/opt/ml/processing/input"),
             ProcessingInput(source=f"s3://{default_bucket}/config/prod_config.json", destination="/opt/ml/processing/config"),
-            ProcessingInput(source=s3_config_uri, destination="/opt/ml/processing/config") 
         ],
         outputs=[ProcessingOutput(
             source="/opt/ml/processing/output",
