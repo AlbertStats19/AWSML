@@ -197,13 +197,36 @@ def get_sagemaker_pipeline(
     # y lo subiremos a S3 para que el script de registro lo lea.
     # Esto es crucial para pasar `model_package_group_name` sin usar `arguments`.
     
+    #register_config_data = {
+    #    "model_package_group_name": model_package_group_name,
+    #    "region": region,
+    #    "role_arn": role,
+    #    "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
+    #    "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
+    #}
+
     register_config_data = {
         "model_package_group_name": model_package_group_name,
         "region": region,
         "role_arn": role,
-        "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1")
+        "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
+        "model_data_url": f"s3://{default_bucket}/iris-artifacts/model/model.tar.gz",
+        "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
     }
-    
+
+    # MODIFICAR BATCH
+    # Editar bucket quemado
+
+    #register_config_data = {
+    #    "model_package_group_name": model_package_group_name,
+    #    "region": region,
+    #    "role_arn": role,
+    #    "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
+    #    "model_data_url": train_step.properties.ModelArtifacts.S3ModelArtifacts.to_string(),
+    #    "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
+    #}
+
+
     # Ruta local para el archivo de configuración temporal
     # Importante: Esto se ejecutará en CodeBuild, así que la ruta temporal debe ser dentro del entorno de CodeBuild.
     # No es necesario crear un directorio si solo vamos a escribir un archivo.
@@ -243,7 +266,8 @@ def get_sagemaker_pipeline(
             ProcessingInput(
                 source=train_step.properties.ModelArtifacts.S3ModelArtifacts,
                 destination="/opt/ml/processing/model_data",
-                input_name="model_data" # Nombre del canal para SM_CHANNEL_MODEL_DATA_S3_URI
+                # input_name="model_data" # Nombre del canal para SM_CHANNEL_MODEL_DATA_S3_URI
+                input_name="model"
             ),
             ProcessingInput( # <-- NUEVA ENTRADA para el archivo de configuración JSON
                 source=s3_config_uri,
@@ -360,7 +384,25 @@ if __name__ == "__main__":
         model_package_group_name=model_package_group_name,
     )
     
+    print(f"\n Bucket en uso por este pipeline en AWS: {default_bucket}\n")  # ESTA ES LA LÍNEA CLAVE
+
     # Upsert el pipeline (crea o actualiza la definición del pipeline en SageMaker)
     print(f"Upserting SageMaker Pipeline: {pipeline.name}")
     # El role_arn en upsert es el rol que el pipeline usará para llamar a otros servicios.
     pipeline.upsert(role_arn=role) 
+
+    # IMPORTANTE: En un pipeline de CI/CD, usualmente NO inicias la ejecución del SageMaker Pipeline
+    # inmediatamente después de su upsert.
+    # La ejecución del pipeline de ML (SageMaker Pipeline) se suele disparar:
+    # 1. Manualmente desde la consola.
+    # 2. Por un evento de CloudWatch (ej. carga de nuevos datos a S3).
+    # 3. Como un paso posterior en el CodePipeline si lo quieres encadenar.
+    #
+    # Si quieres que CodeBuild inicie una ejecución *automáticamente* cada vez que se actualiza el pipeline,
+    # entonces mantén las siguientes líneas. Si no, coméntalas.
+    # Por ahora, las dejo comentadas para darte la opción, ya que el patrón común es no disparar inmediatamente.
+    #
+    # print(f"Starting SageMaker Pipeline execution for: {pipeline.name}")
+    # execution = pipeline.start()
+    # print(f"SageMaker Pipeline execution ARN: {execution.arn}")
+    # print("SageMaker Pipeline execution initiated. Check SageMaker Pipelines console for status.")
