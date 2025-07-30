@@ -16,6 +16,8 @@ from sagemaker.workflow.parameters import (
     ParameterString,
 )
 
+# Guardar la ruta del modelo en dos salidas
+
 # parameter_custom_lib = "ml.m5.large"
 parameter_custom_lib = "ml.t3.medium"
 parameter_train_job = "ml.c5.xlarge"

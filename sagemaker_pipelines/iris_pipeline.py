@@ -153,6 +153,37 @@ def get_sagemaker_pipeline(
         },
     )
 
+    # Paso intermedio: Copiar el modelo entrenado a una ruta fija conocida
+    copy_model_processor = ScriptProcessor(
+    image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
+    role=role,
+    instance_type=parameter_custom_lib,
+    instance_count=1,
+    base_job_name=f"{base_job_prefix}-copy-model",
+    sagemaker_session=sagemaker_session,
+    command=["python3"],
+    )
+
+    copy_model_step = ProcessingStep(
+    name="CopyModelToFixedLocation",
+    processor=copy_model_processor,
+    inputs=[
+        ProcessingInput(
+            source=train_step.properties.ModelArtifacts.S3ModelArtifacts,
+            destination="/opt/ml/processing/input"
+        )
+    ],
+    outputs=[
+        ProcessingOutput(
+            source="/opt/ml/processing/input",
+            destination=f"s3://{default_bucket}/iris-artifacts/model/latest",
+            output_name="copied_model"
+        )
+    ],
+    code=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ml_code/copy_model.py"),
+    )
+
+
     # --- Paso 5: Evaluación (Evaluate Model) ---
     evaluation_processor = ScriptProcessor(
         image_uri=sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
@@ -212,7 +243,8 @@ def get_sagemaker_pipeline(
         "region": region,
         "role_arn": role,
         "image_uri": sagemaker.image_uris.retrieve(framework="sklearn", region=region, version="1.0-1"),
-        "model_data_url": f"s3://{default_bucket}/iris-artifacts/model/model.tar.gz",
+        "model_data_url": f"s3://{default_bucket}/iris-artifacts/model/latest/model.tar.gz",
+        # "model_data_url": f"s3://{default_bucket}/iris-artifacts/model/model.tar.gz",
         "evaluation_s3_uri": f"s3://{default_bucket}/iris-artifacts/evaluation_report/evaluation.json"
     }
 
@@ -350,6 +382,7 @@ def get_sagemaker_pipeline(
             preprocess_step,
             split_data_step,
             train_step,
+            copy_model_step,
             evaluate_step,
             condition_step # Agrega el paso condicional
         ],
