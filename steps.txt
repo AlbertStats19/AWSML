@@ -9,7 +9,6 @@ aws cloudformation deploy `
   --capabilities CAPABILITY_NAMED_IAM `
   --region us-east-1
 
-
 2) CODEPIPELINE
 
 aws cloudformation deploy `
@@ -45,7 +44,7 @@ aws service-quotas get-service-quota --service-code sagemaker --quota-code L-DC2
 aws service-quotas get-service-quota --service-code sagemaker --quota-code L-0263D0A3 --region us-east-1
 aws service-quotas get-service-quota --service-code sagemaker --quota-code L-BBD9EAAD --region us-east-1
 
-### 1. DELETE CODE BUILD
+### 1. DELETE CLOUD FORMATION  / PILAS
 aws cloudformation delete-stack --stack-name IrisMLOps-MainStack --region us-east-1
 aws cloudformation delete-stack --stack-name IrisMLOps-CodePipelineStack --region us-east-1
 
@@ -66,3 +65,16 @@ aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sag
 
 # Registro del modelo
 aws sagemaker list-model-packages --model-package-group-name iris-mlops-IrisModelGroup --region us-east-1 --sort-by CreationTime --sort-order Descending --output json
+
+# Eiminar modelo registrado
+aws sagemaker delete-model-package --model-package-name arn:aws:sagemaker:us-east-1:503427799533:model-package/iris-mlops-IrisModelGroup/1 --region us-east-1
+
+# Listado de grupos de modelos
+aws sagemaker list-model-package-groups --region us-east-1
+
+# Eliminar listados grupos de modelos
+aws sagemaker delete-model-package-group --model-package-group-name iris-mlops-IrisModelGroup --region us-east-1
+aws sagemaker delete-model-package-group --model-package-group-name IrisModelGroup --region us-east-1
+
+# Errores main stack o pilas
+aws cloudformation describe-stack-events --stack-name IrisMLOps-MainStack --region us-east-1 > error_mainstack.json

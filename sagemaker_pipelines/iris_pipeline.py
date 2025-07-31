@@ -19,8 +19,8 @@ from sagemaker.workflow.parameters import (
 # Guardar la ruta del modelo en dos salidas
 
 # parameter_custom_lib = "ml.m5.large"
-parameter_custom_lib = "ml.t3.medium"
-parameter_train_job = "ml.c5.xlarge"
+parameter_custom_lib = "ml.t3.medium" ## GET DATA
+parameter_train_job = "ml.c5.xlarge" ## TRAIN MODEL
 
 
 # La función get_sagemaker_pipeline ahora aceptará los parámetros
