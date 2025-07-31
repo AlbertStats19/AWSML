@@ -17,7 +17,7 @@ aws cloudformation deploy `
   --template-file infrastructure/codepipeline_stack.yaml `
   --capabilities CAPABILITY_NAMED_IAM `
   --parameter-overrides `
-    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/a21550f1-fb07-4a40-8ffc-198f6f30a8e5" `
+    GitHubConnectionArn="arn:aws:codeconnections:us-east-1:503427799533:connection/2e596065-8b79-40bf-bdef-d1e82b6433d7" `
     GitHubRepositoryOwner="AlbertStats19" `
     GitHubRepositoryName="AWSML" `
     GitHubBranchName="main" `
@@ -63,3 +63,6 @@ https://us-east-1.console.aws.amazon.com/servicequotas/home/dashboard
 # Ejecuciones
 aws sagemaker list-pipeline-executions --pipeline-name iris-mlops-pipeline-IrisMLOpsPipeline --region us-east-1 --query "PipelineExecutionSummaries[0].PipelineExecutionArn" --output text
 aws sagemaker list-pipeline-execution-steps --pipeline-execution-arn arn:aws:sagemaker:us-east-1:503427799533:pipeline/iris-mlops-pipeline-IrisMLOpsPipeline/execution/jbq6r2giwpp3 --region us-east-1
+
+# Registro del modelo
+aws sagemaker list-model-packages --model-package-group-name iris-mlops-IrisModelGroup --region us-east-1 --sort-by CreationTime --sort-order Descending --output json
