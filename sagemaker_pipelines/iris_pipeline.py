@@ -31,7 +31,7 @@ def get_sagemaker_pipeline(
     default_bucket: str,
     base_job_prefix: str,
     model_package_group_name: str,
-    model_accuracy_threshold: float = 0.90,
+    model_accuracy_threshold: float = 0.91,
     sample_rate_for_batch_predict: float = 0.1
 ) -> Pipeline:
 
