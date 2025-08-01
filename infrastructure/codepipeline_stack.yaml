@@ -13,7 +13,7 @@ Parameters:
     Type: String
     Description: El ARN de la conexión de AWS CodeStar para GitHub.
     # *** IMPORTANTE: REEMPLAZA CON EL ARN REAL DE TU CONEXION ***
-    Default: arn:aws:codeconnections:us-east-1:503427799533:connection/2e596065-8b79-40bf-bdef-d1e82b6433d7 # <--- ¡CAMBIA ESTO CON TU ARN REAL!
+    Default: arn:aws:codeconnections:us-east-1:503427799533:connection/477da7b4-29b9-406b-a6c0-22ffc7674299 # <--- ¡CAMBIA ESTO CON TU ARN REAL!
 
   GitHubRepositoryOwner:
     Type: String
