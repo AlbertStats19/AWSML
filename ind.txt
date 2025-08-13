@@ -5,7 +5,7 @@
 # AWSCodeBuildAdminAccess
 # AWSCodePipeline_FullAccess
 
-DATA
+DATA / ML
 # parameter_custom_lib = "ml.t3.medium"
 ML TRAINING
 # parameter_train_job = "ml.c5.xlarge"
