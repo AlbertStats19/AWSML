@@ -7,6 +7,9 @@ import json
 print("==> Iniciando predicción por lotes...")
 
 # Rutas
+
+# Rutas2
+
 compressed_model_path = "/opt/ml/processing/model/model.tar.gz"
 extracted_model_path = "/opt/ml/processing/model/model.joblib"
 input_data_path = "/opt/ml/processing/input/iris_raw.csv"
